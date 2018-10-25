@@ -1,0 +1,6 @@
+reset;
+model C:\Users\Lenovo\netshort_test.mod;
+option solver knitro;
+solve;
+option omit_zero_rows 1;
+display Use;
