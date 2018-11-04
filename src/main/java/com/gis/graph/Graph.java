@@ -13,4 +13,5 @@ public interface Graph  {
     Vertex getDest(Edge e);
     Graph copy();
     void removeEdges(Collection<Edge> coll);
+    void removeEdge(Edge edge);
 }

@@ -147,8 +147,7 @@ public class Algorithm {
             v1 = graph.getSource(edgeSaved);
             v2 = graph.getDest(edgeSaved);
 
-            Set<Edge> singleton = Collections.singleton(edgeSaved);
-            graph.removeEdges(singleton);
+            graph.removeEdge(edgeSaved);
 
             boolean ifPathExists = checkIfExistsPath(graph, source, end);
 
@@ -170,12 +169,10 @@ public class Algorithm {
         return firstPartPath;
     }
 
-    private static boolean checkIfExistsPath(Graph g, Vertex start, Vertex end) {
+    public static boolean checkIfExistsPath(Graph graph, Vertex start, Vertex end) {
         if(start == end){
             return true;
         }
-
-        Graph graph = g.copy();
         Set<Vertex> visited = new HashSet<>();
         LinkedList<Vertex> queue = new LinkedList<>();
         visited.add(start);
