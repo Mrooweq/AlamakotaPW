@@ -14,7 +14,7 @@ public class DirectedSparseGraph implements Graph {
 
     private Set<Relation> relations = new HashSet<>();
 
-    // Indeks poprawiajacy wydajnosc metod getDest i getSource
+    // Indeks poprawiajacy wydajnosc metod getDest, getSource i removeEdge
     private Map<Edge, Relation> relationsMap = new HashMap<>();
 
     private DirectedSparseGraph(Set<Relation> relations){
@@ -104,18 +104,14 @@ public class DirectedSparseGraph implements Graph {
 
     @Override
     public void removeEdges(Collection<Edge> edges) {
-        List<Relation> relationsToRemove = relations.stream()
-                .filter(x -> edges.contains(x.getEdge()))
-                .collect(Collectors.toList());
-        relations.removeAll(relationsToRemove);
         for(Edge edge : edges) {
-            relationsMap.remove(edge);
+            removeEdge(edge);
         }
     }
 
     @Override
     public void removeEdge(Edge edge) {
-        relations.removeIf(x -> edge == x.getEdge());
+        relations.remove(relationsMap.get(edge));
         relationsMap.remove(edge);
     }
 }

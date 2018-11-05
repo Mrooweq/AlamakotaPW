@@ -14,7 +14,11 @@ public class Main {
 
     public static void main(String[] args) {
         args = mock();  //////////////////////////
+        long readStart = System.currentTimeMillis();
         Wrapper wrapper = FromFile.generateGraphBasedOnPathFile(args);
+        long timeOfRead = System.currentTimeMillis() - readStart;
+        System.out.println("\nCzas wczytywania grafu:");
+        System.out.println(timeOfRead + " ms");
 
         if(wrapper == null){
             return;
