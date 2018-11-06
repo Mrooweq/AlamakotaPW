@@ -83,7 +83,7 @@ public class Algorithm {
         throw new RuntimeException();
     }
 
-    private static List<Vertex> findMinPath(Graph g, Vertex source, Vertex end) throws NoPathException {
+    public static List<Vertex> findMinPath(Graph g, Vertex source, Vertex end) throws NoPathException {
         if(source == end){
             return Collections.singletonList(source);
         }
@@ -210,7 +210,7 @@ public class Algorithm {
     }
 
 
-    private static Graph prepareGraph(Graph inputGraph, Vertex source, Vertex end) {
+    public static Graph prepareGraph(Graph inputGraph, Vertex source, Vertex end) {
         Graph graph = inputGraph.copy();
 
         Set<Edge> edgesToBeRemoved = graph.getEdges().stream()
