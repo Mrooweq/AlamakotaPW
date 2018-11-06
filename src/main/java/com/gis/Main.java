@@ -54,9 +54,9 @@ public class Main {
     private static String[] mock() {
         String[] args;
         args = new String[3];
-        args[0] = "graf.txt";
-        args[1] = "0";
-        args[2] = "99";
+        args[0] = "findMinPath.txt";
+        args[1] = "74";
+        args[2] = "75";
         return args;
     }
 }
