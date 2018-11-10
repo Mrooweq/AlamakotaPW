@@ -17,29 +17,9 @@ public class AmplService {
 
     private static final Pattern PATTERN = Pattern.compile("^(\\d)\\s(\\d)\\s{3}\\d$");
 
-    public static void main(String[] args) {
-        Wrapper wrapper = GraphGenerator.smallGraph3();
-
-        try {
-            PathWrapper algoPaths = Algorithm.getPaths(wrapper.getGraph(), wrapper.getFrom(), wrapper.getTo());
-            PathWrapper2 optPaths = optimize(wrapper);
-
-            System.out.println();
-
-        } catch (NoPathException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static PathWrapper2 optimize(Wrapper wrapper){
-        try {
-            generateDataFile(wrapper);
-            return getOptimalPathByOptimization();
-        }
-        catch (Exception e){
-            e.printStackTrace();
-            throw new RuntimeException("Nie udalo sie przeprowadzic optymalizacji");
-        }
+    public static PathWrapper2 optimize(Wrapper wrapper) throws Exception {
+        generateDataFile(wrapper);
+        return getOptimalPathByOptimization();
     }
 
     private static void generateDataFile(Wrapper wrapper) {
@@ -145,26 +125,43 @@ public class AmplService {
 
         List<Integer> path = new ArrayList<>();
 
+        Map<Integer, Integer> mapOfVertices = new HashMap<>();
+
+        int first = Integer.MAX_VALUE;
+
         while (scanner.hasNextLine()) {
-            Matcher matcher = PATTERN.matcher(scanner.nextLine());
+            String s = scanner.nextLine();
+            System.out.println(s);
+            Matcher matcher = PATTERN.matcher(s);
 
             if(matcher.matches()) {
                 int a = Integer.parseInt(matcher.group(1));
                 int b = Integer.parseInt(matcher.group(2));
 
-                if(!path.contains(a)){
-                    path.add(a);
+                if(first == Integer.MAX_VALUE){
+                    first = a;
                 }
 
-                if(!path.contains(b)){
-                    path.add(b);
-                }
+                mapOfVertices.put(a, b);
             }
         }
 
         stdin.close();
         stdout.close();
         process.destroy();
+
+        path.add(first);
+        Integer i = first;
+        while(true){
+            i = mapOfVertices.get(i);
+
+            if(i == null){
+                break;
+            }
+
+            path.add(i);
+        }
+
         return path;
     }
 }

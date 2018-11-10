@@ -9,7 +9,7 @@ param BIG_NUMBER = 9999999999;
 param flow {ROADS} >= 0;        
 var Use {(i,j) in ROADS}  binary, := 1; 
 
-maximize Total_flow: min {(i,j) in ROADS}
+minimize Total_flow: min {(i,j) in ROADS}
 		 ((1-Use[i,j]) * BIG_NUMBER + flow[i,j] * Use[i,j]);
 
 s.t. Start:  sum {(entr,j) in ROADS} Use[entr,j] = 1;
