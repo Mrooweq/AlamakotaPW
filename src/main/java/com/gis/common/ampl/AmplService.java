@@ -131,7 +131,7 @@ public class AmplService {
 
         while (scanner.hasNextLine()) {
             String s = scanner.nextLine();
-            System.out.println(s);
+//            System.out.println(s);
             Matcher matcher = PATTERN.matcher(s);
 
             if(matcher.matches()) {
@@ -150,8 +150,13 @@ public class AmplService {
         stdout.close();
         process.destroy();
 
+        if(mapOfVertices.size() == 0){
+            throw new RuntimeException("Nie da sie zoptymalizowac");
+        }
+
         path.add(first);
         Integer i = first;
+
         while(true){
             i = mapOfVertices.get(i);
 

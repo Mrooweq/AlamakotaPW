@@ -2,28 +2,70 @@ package com.gis.common.ampl;
 
 import com.gis.algorithm.Algorithm;
 import com.gis.algorithm.GraphGenerator;
+import com.gis.common.fileoperations.ToFile;
 import com.gis.graph.*;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CompareService {
     public static void main(String[] args) {
-        Wrapper wrapper = GraphGenerator.smallGraph3();
-        boolean compare = false;
 
-        try {
-            PathWrapper algoPaths = Algorithm.getPaths(wrapper.getGraph(), wrapper.getFrom(), wrapper.getTo());
-            PathWrapper2 optPaths = AmplService.optimize(wrapper);
 
-            compare = compare(wrapper, algoPaths, optPaths);
-        } catch (Exception e) {
-            e.printStackTrace();
+        for(int i=0; i<10000; i++){
+            Random random = new Random();
+
+            try {
+                int n = 10;
+                int e = n * (n-1) / 2;
+
+                Graph graph = ToFile.generateDAG(random.nextInt(n), random.nextInt(e));
+
+                for (Edge edge : graph.getEdges()) {
+                    Vertex source = graph.getSource(edge);
+                    Vertex dest = graph.getDest(edge);
+
+                    System.out.println(source.getId() + " " + dest.getId() + "\t" + edge.getFlow());
+                }
+
+                System.out.println("\n");
+
+                List<Vertex> lista = graph.getVertices().stream()
+                        .sorted(Comparator.comparing(Vertex::getId))
+                        .collect(Collectors.toList());
+
+                int j;
+                int k;
+
+                do{
+                    j = random.nextInt(lista.size());
+                    k = random.nextInt(lista.size());
+                } while (j+1 > k);
+
+                Vertex v1 = lista.get(j);
+                Vertex v2 = lista.get(k);
+
+                Wrapper wrapper = new Wrapper(graph, v1, v2);
+
+                PathWrapper algoPaths = Algorithm.getPaths(wrapper.getGraph(), wrapper.getFrom(), wrapper.getTo());
+                PathWrapper2 optPaths = AmplService.optimize(wrapper);
+
+                boolean compare = compare(wrapper, algoPaths, optPaths);
+
+                if(compare){
+                    System.out.println();
+                }
+                else{
+                    System.out.println();
+                }
+            } catch (Exception e) {
+                System.out.println();
+            }
+
+            Vertex.ID = 0;
+            Edge.ID = 0;
         }
 
-        System.out.println();
     }
 
     private static boolean compare(Wrapper wrapper, PathWrapper algoPaths, PathWrapper2 optPaths) {
@@ -37,7 +79,7 @@ public class CompareService {
         int flowOnPathFromAlgo = getFlowOnPath(wrapper, minAlgoPath);
         int flowOnPathFromOpt = getFlowOnPath(wrapper, minOptPath);
 
-        if(flowOnPathFromAlgo != flowOnPathFromOpt){
+        if(flowOnPathFromAlgo > flowOnPathFromOpt){
             return false;
         }
 
@@ -50,7 +92,7 @@ public class CompareService {
         flowOnPathFromAlgo = getFlowOnPath(wrapper, maxAlgoPath);
         flowOnPathFromOpt = getFlowOnPath(wrapper, maxOptPath);
 
-        if(flowOnPathFromAlgo != flowOnPathFromOpt){
+        if(flowOnPathFromAlgo < flowOnPathFromOpt){
             return false;
         }
 

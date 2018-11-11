@@ -40,6 +40,7 @@ public class ToFile {
                     j = random.nextInt(lista.size());
                     k = random.nextInt(lista.size());
                 } while (j+1 > k);
+
                 Vertex v1 = lista.get(j);
                 Vertex v2 = lista.get(k);
 
@@ -51,7 +52,6 @@ public class ToFile {
 
                 if(end > max && !minPath.isEmpty()){
                     max = end;
-                    System.out.println("xDDD: " + max + " | " + i);
                     generateFileBasedOnGraph( new Wrapper(graph, v1, v2) );
                 }
             } catch (Exception ignored) {}
