@@ -14,7 +14,11 @@ public class Main {
 
     public static void main(String[] args) {
         args = mock();  //////////////////////////
+        long readStart = System.currentTimeMillis();
         Wrapper wrapper = FromFile.generateGraphBasedOnPathFile(args);
+        long timeOfRead = System.currentTimeMillis() - readStart;
+        System.out.println("\nCzas wczytywania grafu:");
+        System.out.println(timeOfRead + " ms");
 
         if(wrapper == null){
             return;
@@ -50,9 +54,9 @@ public class Main {
     private static String[] mock() {
         String[] args;
         args = new String[3];
-        args[0] = "C:\\Users\\Lenovo\\ProjektPORR\\graf.txt";
-        args[1] = "0";
-        args[2] = "99";
+        args[0] = "findMinPath.txt";
+        args[1] = "74";
+        args[2] = "75";
         return args;
     }
 }

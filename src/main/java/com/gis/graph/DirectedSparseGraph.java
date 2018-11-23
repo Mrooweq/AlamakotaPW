@@ -6,6 +6,7 @@ import com.gis.common.exception.ParallelEdgeException;
 import lombok.NoArgsConstructor;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @NoArgsConstructor
@@ -13,32 +14,31 @@ public class DirectedSparseGraph implements Graph {
 
     private Set<Relation> relations = new HashSet<>();
 
+    // Indeks poprawiajacy wydajnosc metod getDest, getSource i removeEdge
+    private Map<Edge, Relation> relationsMap = new HashMap<>();
+
     private DirectedSparseGraph(Set<Relation> relations){
-        Set<Relation> relations2 = new HashSet<>();
-        relations2.addAll(relations);
-        this.relations = relations2;
+        this.relations  = new HashSet<>(relations);
+        this.relationsMap = relations.stream().collect(Collectors.toMap(Relation::getEdge, Function.identity()));
     }
 
     @Override
     public void addEdge(Edge e, Vertex v1, Vertex v2) {
-        long numberOfEdgesWithSameId = relations.stream()
-                .map(x -> x.getEdge().getId())
-                .filter(x -> x == e.getId())
-                .count();
-
-        if(numberOfEdgesWithSameId > 0){
+        boolean edgeWithSameIdExists = relations.stream().
+                anyMatch(x -> x.getEdge().getId() == e.getId());
+        if(edgeWithSameIdExists){
             throw new EdgeWithGivenIdAlreadyExistsException();
         }
 
-        long numberOfEdgesParallelToInput = relations.stream()
-                .filter(x -> x.getFrom() == v1 && x.getTo() == v2)
-                .count();
-
-        if(numberOfEdgesParallelToInput > 0){
+        boolean edgeParallelToInputExists = relations.stream()
+                .anyMatch(x -> x.getFrom() == v1 && x.getTo() == v2);
+        if(edgeParallelToInputExists){
             throw new ParallelEdgeException();
         }
 
-        relations.add( new Relation(v1, e, v2) );
+        Relation relation = new Relation(v1, e, v2);
+        relations.add(relation);
+        relationsMap.put(e, relation);
     }
 
 
@@ -89,18 +89,12 @@ public class DirectedSparseGraph implements Graph {
 
     @Override
     public Vertex getSource(Edge e) {
-        return relations.stream()
-                .filter(x -> x.getEdge() == e)
-                .map(Relation::getFrom)
-                .findAny().get();
+        return relationsMap.get(e).getFrom();
     }
 
     @Override
     public Vertex getDest(Edge e) {
-        return relations.stream()
-                .filter(x -> x.getEdge() == e)
-                .map(Relation::getTo)
-                .findAny().get();
+        return relationsMap.get(e).getTo();
     }
 
     @Override
@@ -109,11 +103,15 @@ public class DirectedSparseGraph implements Graph {
     }
 
     @Override
-    public void removeEdges(Collection<Edge> coll) {
-        List<Relation> relationsToRemove = relations.stream()
-                .filter(x -> coll.contains(x.getEdge()))
-                .collect(Collectors.toList());
+    public void removeEdges(Collection<Edge> edges) {
+        for(Edge edge : edges) {
+            removeEdge(edge);
+        }
+    }
 
-        relations.removeAll(relationsToRemove);
+    @Override
+    public void removeEdge(Edge edge) {
+        relations.remove(relationsMap.get(edge));
+        relationsMap.remove(edge);
     }
 }
