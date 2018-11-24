@@ -9,17 +9,33 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class CompareService {
+    public static final int LOOP_SIZE = 1000;
+
     public static void main(String[] args) {
 
+        int allValid = 0;
+        int optWorseThanProper = 0;
+        int differentResults = 0;
 
-        for(int i=0; i<10000; i++){
+        while (allValid < LOOP_SIZE){
             Random random = new Random();
-
+            System.out.println("xDDD: " + allValid);
             try {
                 int n = 10;
                 int e = n * (n-1) / 2;
 
-                Graph graph = ToFile.generateDAG(random.nextInt(n), random.nextInt(e));
+                int randomN = random.nextInt(n) + 1;
+                int randomE;
+
+                if(randomN == 1){
+                    continue;
+                }
+
+                do{
+                    randomE = random.nextInt(e);
+                } while (randomE > randomN * (randomN-1) / 2 || randomE == 0);
+
+                Graph graph = ToFile.generateDAG(randomN, randomE);
 
                 for (Edge edge : graph.getEdges()) {
                     Vertex source = graph.getSource(edge);
@@ -50,22 +66,32 @@ public class CompareService {
                 PathWrapper algoPaths = Algorithm.getPaths(wrapper.getGraph(), wrapper.getFrom(), wrapper.getTo());
                 PathWrapper2 optPaths = AmplService.optimize(wrapper);
 
+                List<Integer> minAlgoPath = algoPaths.getMinPath().stream().map(Vertex::getId).collect(Collectors.toList());
+                List<Integer> minOptPath = optPaths.getMinPath();
+                List<Integer> maxAlgoPath = algoPaths.getMaxPath().stream().map(Vertex::getId).collect(Collectors.toList());
+                List<Integer> maxOptPath = optPaths.getMaxPath();
+
                 boolean compare = compare(wrapper, algoPaths, optPaths);
 
+                allValid++;
+
                 if(compare){
-                    System.out.println();
+                    if(minAlgoPath.hashCode() != minOptPath.hashCode() || maxAlgoPath.hashCode() != maxOptPath.hashCode()){ //jedno z tych dwoch
+                        differentResults++;
+                    }
                 }
                 else{
-                    System.out.println();
+                    optWorseThanProper++;
                 }
-            } catch (Exception e) {
-                System.out.println();
-            }
+            } catch (Exception ignored) {}
 
             Vertex.ID = 0;
             Edge.ID = 0;
         }
 
+        System.out.println("allProper: " + allValid);
+        System.out.println("optWorseThanProper: " + optWorseThanProper);
+        System.out.println("differentResults: " + differentResults);
     }
 
     private static boolean compare(Wrapper wrapper, PathWrapper algoPaths, PathWrapper2 optPaths) {
@@ -79,7 +105,7 @@ public class CompareService {
         int flowOnPathFromAlgo = getFlowOnPath(wrapper, minAlgoPath);
         int flowOnPathFromOpt = getFlowOnPath(wrapper, minOptPath);
 
-        if(flowOnPathFromAlgo > flowOnPathFromOpt){
+        if(flowOnPathFromAlgo != flowOnPathFromOpt){
             return false;
         }
 
@@ -92,7 +118,7 @@ public class CompareService {
         flowOnPathFromAlgo = getFlowOnPath(wrapper, maxAlgoPath);
         flowOnPathFromOpt = getFlowOnPath(wrapper, maxOptPath);
 
-        if(flowOnPathFromAlgo < flowOnPathFromOpt){
+        if(flowOnPathFromAlgo != flowOnPathFromOpt){
             return false;
         }
 

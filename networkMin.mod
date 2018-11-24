@@ -7,7 +7,7 @@ set ROADS within (INTER) cross (INTER );
 
 param BIG_NUMBER = 9999999999;
 param flow {ROADS} >= 0;        
-var Use {(i,j) in ROADS}  binary, := 1; 
+var Use {(i,j) in ROADS}  binary, := 1;
 
 minimize Total_flow: min {(i,j) in ROADS}
 		 ((1-Use[i,j]) * BIG_NUMBER + flow[i,j] * Use[i,j]);
@@ -17,5 +17,5 @@ s.t. Start:  sum {(entr,j) in ROADS} Use[entr,j] = 1;
 s.t. Balance {k in INTER diff {entr,exit}}:
    sum {(i,k) in ROADS} Use[i,k] = sum {(k,j) in ROADS} Use[k,j];
    
-s.t. NoRepeat {k in INTER diff {entr,exit}}:
+s.t. NoRepeat {k in INTER}:
    sum {(i,k) in ROADS} Use[i,k] <= 1;
