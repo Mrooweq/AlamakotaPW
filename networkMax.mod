@@ -17,5 +17,5 @@ s.t. Start:  sum {(entr,j) in ROADS} Use[entr,j] = 1;
 s.t. Balance {k in INTER diff {entr,exit}}:
    sum {(i,k) in ROADS} Use[i,k] = sum {(k,j) in ROADS} Use[k,j];
    
-s.t. NoRepeat {k in INTER diff {entr,exit}}:
+s.t. NoRepeat {k in INTER}:
    sum {(i,k) in ROADS} Use[i,k] <= 1;
