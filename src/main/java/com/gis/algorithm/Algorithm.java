@@ -123,7 +123,7 @@ public class Algorithm {
         throw new NoPathException();
     }
 
-    private static List<Vertex> findMaxPath(Graph g, Vertex source, Vertex end) throws NoPathException {
+    public static List<Vertex> findMaxPath(Graph g, Vertex source, Vertex end) throws NoPathException {
         if(source == end){
             return Collections.singletonList(source);
         }

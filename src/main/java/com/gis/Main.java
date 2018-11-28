@@ -13,7 +13,7 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
-        args = mock();  //////////////////////////
+        args = mockForLongEqualTimeForBothPaths();  //////////////////////////
         long readStart = System.currentTimeMillis();
         Wrapper wrapper = FromFile.generateGraphBasedOnPathFile(args);
         long timeOfRead = System.currentTimeMillis() - readStart;
@@ -51,7 +51,7 @@ public class Main {
         System.out.println(timeOfExecution + " ms");
     }
 
-    private static String[] mock() {
+    private static String[] mockForLongTimeOfFindMinPath() {
         String[] args;
         args = new String[3];
         args[0] = "findMinPath.txt";
@@ -59,4 +59,14 @@ public class Main {
         args[2] = "75";
         return args;
     }
+
+    private static String[] mockForLongEqualTimeForBothPaths() {
+        String[] args;
+        args = new String[3];
+        args[0] = "findEqualTimePath.txt";
+        args[1] = "5";
+        args[2] = "15";
+        return args;
+    }
+
 }

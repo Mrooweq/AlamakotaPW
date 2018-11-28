@@ -24,7 +24,7 @@ public class ToFile {
             try {
                 Random random = new Random();
 
-                int n = 150;
+                int n = 220;
                 int e = n * (n-1) / 2;
 
                 Graph graph = generateDAG(random.nextInt(n), random.nextInt(e));
@@ -46,12 +46,26 @@ public class ToFile {
 
                 Graph prepareGraph = Algorithm.prepareGraph(graph, v1, v2);
 
-                long start = System.currentTimeMillis();
+                long start1 = System.currentTimeMillis();
                 List<Vertex> minPath = Algorithm.findMinPath(prepareGraph, v1, v2);
-                long end = System.currentTimeMillis() - start;
+                long end1 = System.currentTimeMillis() - start1;
 
-                if(end > max && !minPath.isEmpty()){
-                    max = end;
+                long start2 = System.currentTimeMillis();
+                List<Vertex> maxPath = Algorithm.findMaxPath(prepareGraph, v1, v2);
+                long end2 = System.currentTimeMillis() - start2;
+
+                long mean = (end1 + end2) / 2;
+                double min = Integer.MAX_VALUE;
+                double sumOfPows = Math.pow(end1 - mean, 2) + Math.pow(end2 - mean, 2);
+                int BORDER = 10000;
+
+                System.out.println("min: " + end1);
+                System.out.println("max: " + end2);
+                System.out.println("\n");
+
+                if(!minPath.isEmpty() && !maxPath.isEmpty() && end1 > BORDER && end2 > BORDER && sumOfPows < min){
+                    System.out.println(end1 + " | " + end2);
+                    min = sumOfPows;
                     generateFileBasedOnGraph( new Wrapper(graph, v1, v2) );
                 }
             } catch (Exception ignored) {}
