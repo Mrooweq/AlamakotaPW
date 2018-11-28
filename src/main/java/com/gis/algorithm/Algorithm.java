@@ -7,6 +7,7 @@ import com.gis.graph.Graph;
 import com.gis.graph.Vertex;
 
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 
@@ -31,16 +32,41 @@ public class Algorithm {
         if(!checkIfExistsPath(graph, source, end)){
             throw new NoPathException();
         }
+        //Start of paralleling
+        //List<Vertex> minPath = findMinPath(graph, source, end);
+        //List<Vertex> maxPath = findMaxPath(graph, source, end);
+        //Parallel execution of finding path findMinPath and findMaxPath
+        ExecutorService findPathsExecutorService = Executors.newFixedThreadPool(2);
+
+        Callable<List<Vertex>> findMinPathCallable = () -> findMinPath(graph, source, end);
+        long startMin = System.currentTimeMillis();
+        Future<List<Vertex>> futureMinPath = findPathsExecutorService.submit(findMinPathCallable);
+
+        Callable<List<Vertex>> findMaxPathCallable = () -> findMaxPath(graph, source, end);
+        long startMax = System.currentTimeMillis();
+        Future<List<Vertex>> futureMaxPath = findPathsExecutorService.submit(findMaxPathCallable);
 
         List<Vertex> minPath = null;
-        try{
-            minPath = findMinPath(graph, source, end);
-        } catch (NoPathException ignored){}
+        try {
+            minPath = futureMinPath.get();
+            long endMin = System.currentTimeMillis();
+            System.out.println("min: " + (endMin - startMin));
+
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
 
         List<Vertex> maxPath = null;
-        try{
-            maxPath = findMaxPath(graph, source, end);
-        } catch (NoPathException ignored){ }
+        try {
+            maxPath = futureMaxPath.get();
+            long endMax = System.currentTimeMillis();
+            System.out.println("max: " + (endMax - startMax));
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        findPathsExecutorService.shutdownNow();
+        //End of paralleling
 
         return new PathWrapper(minPath, maxPath);
     }
@@ -99,9 +125,30 @@ public class Algorithm {
 
         listOfEdges.sort(COMPARATOR);
 
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+
         for (Edge edge : listOfEdges) {
-            boolean first = checkIfExistsPath(g, source, graph.getSource(edge));
-            boolean second = checkIfExistsPath(g, graph.getDest(edge), end);
+            //Start of paralleling
+            //Pallalel 2 executions of method checkIfExistsPath
+            Callable<Boolean> firstCallable = () -> checkIfExistsPath(g, source, graph.getSource(edge));
+            Future<Boolean> futureFirst = executorService.submit(firstCallable);
+
+            Callable<Boolean> secondCallable = () -> checkIfExistsPath(g, graph.getDest(edge), end);
+            Future<Boolean> futureSecond = executorService.submit(secondCallable);
+
+            boolean first = false;
+            try {
+                first = futureFirst.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+            boolean second = false;
+            try {
+                second = futureSecond.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+            //End of paralleling
 
             if (first && second) {
                 List<Vertex> firstPartPath = findShortestPath(graph, source, graph.getSource(edge));
@@ -119,7 +166,7 @@ public class Algorithm {
                 }
             }
         }
-
+        executorService.shutdownNow();
         throw new NoPathException();
     }
 

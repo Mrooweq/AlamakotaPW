@@ -1,0 +1,56 @@
+#before parallel
+1)
+Czas wczytywania grafu:
+6095 ms
+
+min time 30549
+max time 29597
+
+Najcieńsza ścieżka:
+[5, 6, 9, 15]
+
+Najgrubsza ścieżka:
+[5, 8, 9, 15]
+
+Czas wykonania algorytmu:
+60201 ms
+
+Process finished with exit code 0
+
+2)
+Czas wczytywania grafu:
+6055 ms
+
+min time 28383
+max time 29960
+
+Najcieńsza ścieżka:
+[5, 6, 9, 15]
+
+Najgrubsza ścieżka:
+[5, 8, 9, 15]
+
+Czas wykonania algorytmu:
+58395 ms
+
+Process finished with exit code 0
+
+
+#After parallel
+
+1) Czas wczytywania grafu: 6.45 s
+
+Najcieńsza ścieżka: [5, 6, 9, 15]
+
+Najgrubsza ścieżka: [5, 8, 9, 15]
+
+Czas wykonania algorytmu: 33.343 s
+
+2)
+Czas wczytywania grafu: 6.623 s
+
+Najcieńsza ścieżka: [5, 6, 9, 15]
+
+Najgrubsza ścieżka: [5, 8, 9, 15]
+
+Czas wykonania algorytmu: 45.804 s

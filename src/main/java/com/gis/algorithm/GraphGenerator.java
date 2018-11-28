@@ -456,7 +456,7 @@ public class GraphGenerator {
                 if(i != j){
                     Vertex vertex = tabOfVertices[i];
                     Vertex vertex1 = tabOfVertices[j];
-
+                    System.out.println("xx");
                     g.addEdge(new Edge(edgeCnt++, random.nextInt(100) + 1), vertex, vertex1);
                 }
             }
