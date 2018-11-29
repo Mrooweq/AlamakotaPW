@@ -1,13 +1,11 @@
 package com.gis.algorithm;
 
-import com.gis.graph.PathWrapper;
 import com.gis.common.exception.NoPathException;
-import com.gis.graph.Edge;
-import com.gis.graph.Graph;
-import com.gis.graph.Vertex;
+import com.gis.graph.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @SuppressWarnings("Duplicates")
@@ -80,7 +78,7 @@ public class Algorithm {
             }
         }
 
-        throw new RuntimeException();
+        return null;
     }
 
     public static List<Vertex> findMinPath(Graph g, Vertex source, Vertex end) throws NoPathException {
@@ -137,36 +135,71 @@ public class Algorithm {
             return null;
         }
 
-        listOfEdges.sort(COMPARATOR);
+        Relation lol1 = loop(g, 0, source, end);
+        Relation lol2 = loop(g, 1, source, end);
+        Relation lol3 = loop(g, 2, source, end);
+        Relation lol4 = loop(g, 3, source, end);
 
-        Edge edgeSaved = null;
-        Vertex v1 = null, v2 = null;
+        Relation bestRelation = Stream.of(lol1, lol2, lol3, lol4)
+                .filter(Objects::nonNull)
+                .findAny()
+                .get();
 
-        for (int i = 0; i < listOfEdges.size(); i++) {
-            edgeSaved = listOfEdges.get(i);
-            v1 = graph.getSource(edgeSaved);
-            v2 = graph.getDest(edgeSaved);
-
-            graph.removeEdge(edgeSaved);
-
-            boolean ifPathExists = checkIfExistsPath(graph, source, end);
-
-            if(!ifPathExists){
-                break;
-            }
-
-            if(i == listOfEdges.size()-1){
-                throw new NoPathException();
-            }
-        }
-
-        graph.addEdge(edgeSaved, v1, v2);
+        Vertex v1 = bestRelation.getFrom();
+        Vertex v2 = bestRelation.getTo();
 
         List<Vertex> firstPartPath = findShortestPath(graph, source, v1);
         List<Vertex> secondPartPath = findShortestPath(graph, v2, end);
 
         firstPartPath.addAll(secondPartPath);
         return firstPartPath;
+    }
+
+    private static Relation loop(Graph oryginalGraph, int phaseIndex, Vertex source, Vertex end) throws NoPathException {
+        Edge edgeSaved;
+        Vertex v1, v2;
+
+        Graph copy = oryginalGraph.copy();
+        List<Edge> sortedEdges = copy.getEdges().stream()
+                .sorted(COMPARATOR)
+                .collect(Collectors.toList());
+
+        for (int j = 0; j < phaseIndex; j++) {
+            if(!sortedEdges.isEmpty()){
+                Edge remove = sortedEdges.remove(0);
+                copy.removeEdge(remove);
+            }
+        }
+
+        while (true){
+            if(sortedEdges.isEmpty()){
+                return null;
+            }
+
+            edgeSaved = sortedEdges.get(0);
+            v1 = copy.getSource(edgeSaved);
+            v2 = copy.getDest(edgeSaved);
+
+            boolean ifPathExists1 = checkIfExistsPath(copy, source, end);
+            copy.removeEdge(edgeSaved);
+            boolean ifPathExists2 = checkIfExistsPath(copy, source, end);
+
+            if(ifPathExists1 && !ifPathExists2){
+                return new Relation(v1, edgeSaved, v2);
+            }
+            else if(!ifPathExists2){
+                return null;
+            }
+
+            copy.addEdge(edgeSaved, v1, v2);
+
+            for (int j = 0; j < 4; j++) {
+                if(!sortedEdges.isEmpty()){
+                    Edge remove = sortedEdges.remove(0);
+                    copy.removeEdge(remove);
+                }
+            }
+        }
     }
 
     public static boolean checkIfExistsPath(Graph graph, Vertex start, Vertex end) {
