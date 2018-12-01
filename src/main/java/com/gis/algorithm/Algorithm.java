@@ -68,8 +68,8 @@ public class Algorithm {
             e.printStackTrace();
         }
 
-        findPathsExecutorService.shutdownNow();
         //End of paralleling
+        findPathsExecutorService.shutdownNow();
         PathWrapper pathWrapper = new PathWrapper(minPath, maxPath);
         pathWrapper.setMinimum(endMin - startMin);
         pathWrapper.setMaximum(endMax - startMax);
@@ -131,11 +131,11 @@ public class Algorithm {
 
         listOfEdges.sort(COMPARATOR);
 
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
-
         for (Edge edge : listOfEdges) {
             //Start of paralleling
             //Pallalel 2 executions of method checkIfExistsPath
+            ExecutorService executorService = Executors.newFixedThreadPool(2);
+
             Callable<Boolean> firstCallable = () -> checkIfExistsPath(g, source, graph.getSource(edge));
             Future<Boolean> futureFirst = executorService.submit(firstCallable);
 
@@ -154,7 +154,10 @@ public class Algorithm {
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
+
             //End of paralleling
+            executorService.shutdownNow();
+
 
             if (first && second) {
                 //Start of paralleling
@@ -177,15 +180,14 @@ public class Algorithm {
 
                 Set<Vertex> setToEliminateRepeats = new HashSet<>();
                 setToEliminateRepeats.addAll(sum);
+                //End of paralleling
+                shortestPathExecutorService.shutdownNow();
 
                 if (setToEliminateRepeats.size() == firstPartPath.size() + secondPartPath.size()) {
                     return sum;
                 }
-                shortestPathExecutorService.shutdown();
             }
         }
-        executorService.shutdownNow();
-        //End of paralleling
         throw new NoPathException();
     }
 
@@ -244,8 +246,8 @@ public class Algorithm {
 
 
         firstPartPath.addAll(secondPartPath);
-        executorService.shutdown();
         //End of paralleling
+        executorService.shutdownNow();
         return firstPartPath;
     }
 

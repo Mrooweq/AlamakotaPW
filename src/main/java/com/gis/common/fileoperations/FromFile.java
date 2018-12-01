@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FromFile {
     public static Wrapper generateGraphBasedOnPathFile(String[] args){
@@ -106,10 +107,8 @@ public class FromFile {
     private static List<String> getLinesOfFile(File file) {
         List<String> lines = null;
 
-        try {
-            lines = Files.lines(Paths.get(file.getAbsolutePath()))
-                    .collect(Collectors.toList());
-
+        try (Stream<String> s = Files.lines(Paths.get(file.getAbsolutePath()))) {
+            lines = s.collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -15,14 +15,12 @@ public class Main {
 
     public static void main(String[] args) {
 
-        List<String> najgrubszeSciezki = new ArrayList<>();
-
         List<Long> minima = new ArrayList<>();
         List<Long> maxima = new ArrayList<>();
         List<Long> executionTimes = new ArrayList<>();
 
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 10; i++) {
             args = mockForLongEqualTimeForBothPaths();  //////////////////////////
             long readStart = System.currentTimeMillis();
             Wrapper wrapper = FromFile.generateGraphBasedOnPathFile(args);
@@ -57,9 +55,7 @@ public class Main {
             System.out.println(Arrays.toString(minFlowPath.toArray()));
 
             System.out.println("\nNajgrubsza ścieżka:");
-            String najgrubsza = Arrays.toString(maxFlowPath.toArray());
-            najgrubszeSciezki.add(najgrubsza);
-            System.out.println(najgrubsza);
+            System.out.println(Arrays.toString(maxFlowPath.toArray()));
 
             System.out.println("\nCzas wykonania algorytmu:");
             System.out.println(timeOfExecution + " ms");
