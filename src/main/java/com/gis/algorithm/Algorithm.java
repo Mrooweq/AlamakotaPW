@@ -34,12 +34,20 @@ public class Algorithm {
 
         List<Vertex> minPath = null;
         try{
+            long startMin = System.currentTimeMillis();
             minPath = findMinPath(graph, source, end);
+            long endMin = System.currentTimeMillis();
+            System.out.println("min: " + (endMin - startMin));
+
         } catch (NoPathException ignored){}
+
 
         List<Vertex> maxPath = null;
         try{
+            long startMax = System.currentTimeMillis();
             maxPath = findMaxPath(graph, source, end);
+            long endMax = System.currentTimeMillis();
+            System.out.println("max: " + (endMax - startMax));
         } catch (NoPathException ignored){ }
 
         return new PathWrapper(minPath, maxPath);
