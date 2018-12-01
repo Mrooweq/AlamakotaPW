@@ -227,25 +227,13 @@ public class Algorithm {
         }
 
         graph.addEdge(edgeSaved, v1, v2);
-        //Start of paralleling
-        //List<Vertex> firstPartPath = findShortestPath(graph, source, v1);
-        //List<Vertex> secondPartPath = findShortestPath(graph, v2, end);
-         ExecutorService executorService = Executors.newFixedThreadPool(2);
-         Vertex finalV1 = v1;
-         Callable<List<Vertex>> callFirst = () -> findShortestPath(graph, source, finalV1);
-         Future<List<Vertex>> futureFirstPathPath = executorService.submit(callFirst);
 
-         Vertex finalV2 = v2;
-         Callable<List<Vertex>> callSecond = () -> findShortestPath(graph, finalV2, end);
-         Future<List<Vertex>> futureSecondPathPath = executorService.submit(callSecond);
-
-         List<Vertex> firstPartPath = futureFirstPathPath.get();
-         List<Vertex> secondPartPath = futureSecondPathPath.get();
-
+        List<Vertex> firstPartPath = findShortestPath(graph, source, v1);
+        List<Vertex> secondPartPath = findShortestPath(graph, v2, end);
 
         firstPartPath.addAll(secondPartPath);
-        executorService.shutdown();
-        //End of paralleling
+
+
         return firstPartPath;
     }
 
