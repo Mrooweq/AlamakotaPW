@@ -33,24 +33,32 @@ public class Algorithm {
         }
 
         List<Vertex> minPath = null;
+        long startMin = 0;
+        long endMin = 0;
         try{
-            long startMin = System.currentTimeMillis();
+            startMin = System.currentTimeMillis();
             minPath = findMinPath(graph, source, end);
-            long endMin = System.currentTimeMillis();
+            endMin = System.currentTimeMillis();
             System.out.println("min: " + (endMin - startMin));
 
         } catch (NoPathException ignored){}
 
 
         List<Vertex> maxPath = null;
+        long startMax = 0;
+        long endMax = 0;
         try{
-            long startMax = System.currentTimeMillis();
+            startMax = System.currentTimeMillis();
             maxPath = findMaxPath(graph, source, end);
-            long endMax = System.currentTimeMillis();
+            endMax = System.currentTimeMillis();
             System.out.println("max: " + (endMax - startMax));
         } catch (NoPathException ignored){ }
 
-        return new PathWrapper(minPath, maxPath);
+        PathWrapper pathWrapper = new PathWrapper(minPath, maxPath);
+        pathWrapper.setMinimum(endMin - startMin);
+        pathWrapper.setMaximum(endMax - startMax);
+
+        return pathWrapper;
     }
 
     private static List<Vertex> findShortestPath(Graph g, Vertex start, Vertex stop) {

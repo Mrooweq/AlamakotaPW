@@ -12,4 +12,11 @@ import java.util.List;
 public class PathWrapper {
     private List<Vertex> minPath;
     private List<Vertex> maxPath;
+    private long minimum;
+    private long maximum;
+
+    public PathWrapper(List<Vertex> minPath, List<Vertex> maxPath) {
+        this.minPath = minPath;
+        this.maxPath = maxPath;
+    }
 }
