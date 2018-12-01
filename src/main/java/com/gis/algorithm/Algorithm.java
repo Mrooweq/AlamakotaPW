@@ -1,14 +1,12 @@
 package com.gis.algorithm;
 
-import com.gis.graph.PathWrapper;
+import com.gis.graph.*;
 import com.gis.common.exception.NoPathException;
-import com.gis.graph.Edge;
-import com.gis.graph.Graph;
-import com.gis.graph.Vertex;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @SuppressWarnings("Duplicates")
@@ -203,38 +201,92 @@ public class Algorithm {
             return null;
         }
 
-        listOfEdges.sort(COMPARATOR);
+        /////// DO ZROWNOLEGLENIA
 
-        Edge edgeSaved = null;
-        Vertex v1 = null, v2 = null;
+        Relation lol1 = loop(g, 0, source, end);
+        Relation lol2 = loop(g, 1, source, end);
+        Relation lol3 = loop(g, 2, source, end);
+        Relation lol4 = loop(g, 3, source, end);
 
-        for (int i = 0; i < listOfEdges.size(); i++) {
-            edgeSaved = listOfEdges.get(i);
-            v1 = graph.getSource(edgeSaved);
-            v2 = graph.getDest(edgeSaved);
+        ////////
 
-            graph.removeEdge(edgeSaved);
+        Relation bestRelation = Stream.of(lol1, lol2, lol3, lol4)
+                .filter(Objects::nonNull)
+                .findAny()
+                .get();
 
-            boolean ifPathExists = checkIfExistsPath(graph, source, end);
+        Vertex v1 = bestRelation.getFrom();
+        Vertex v2 = bestRelation.getTo();
 
-            if(!ifPathExists){
-                break;
-            }
+        //Start of paralleling
+        //List<Vertex> firstPartPath = findShortestPath(graph, source, v1);
+        //List<Vertex> secondPartPath = findShortestPath(graph, v2, end);
+        ExecutorService executorService = Executors.newFixedThreadPool(2);
+        Vertex finalV1 = v1;
+        Callable<List<Vertex>> callFirst = () -> findShortestPath(graph, source, finalV1);
+        Future<List<Vertex>> futureFirstPathPath = executorService.submit(callFirst);
 
-            if(i == listOfEdges.size()-1){
-                throw new NoPathException();
+        Vertex finalV2 = v2;
+        Callable<List<Vertex>> callSecond = () -> findShortestPath(graph, finalV2, end);
+        Future<List<Vertex>> futureSecondPathPath = executorService.submit(callSecond);
+
+        List<Vertex> firstPartPath = futureFirstPathPath.get();
+        List<Vertex> secondPartPath = futureSecondPathPath.get();
+
+
+        firstPartPath.addAll(secondPartPath);
+        executorService.shutdown();
+        //End of paralleling
+
+        return firstPartPath;
+    }
+
+    private static Relation loop(Graph oryginalGraph, int phaseIndex, Vertex source, Vertex end) throws NoPathException {
+        Edge edgeSaved;
+        Vertex v1, v2;
+
+        Graph copy = oryginalGraph.copy();
+        List<Edge> sortedEdges = copy.getEdges().stream()
+                .sorted(COMPARATOR)
+                .collect(Collectors.toList());
+
+        for (int j = 0; j < phaseIndex; j++) {
+            if(!sortedEdges.isEmpty()){
+                Edge remove = sortedEdges.remove(0);
+                copy.removeEdge(remove);
             }
         }
 
-        graph.addEdge(edgeSaved, v1, v2);
+        while (true){
+            if(sortedEdges.isEmpty()){
+                return null;
+            }
 
-        List<Vertex> firstPartPath = findShortestPath(graph, source, v1);
-        List<Vertex> secondPartPath = findShortestPath(graph, v2, end);
+            edgeSaved = sortedEdges.get(0);
+            v1 = copy.getSource(edgeSaved);
+            v2 = copy.getDest(edgeSaved);
 
-        firstPartPath.addAll(secondPartPath);
 
+            boolean ifPathExists1 = checkIfExistsPath(copy, source, end);
+            copy.removeEdge(edgeSaved);
+            boolean ifPathExists2 = checkIfExistsPath(copy, source, end);
 
-        return firstPartPath;
+            if(ifPathExists1 && !ifPathExists2){
+                return new Relation(v1, edgeSaved, v2);
+            }
+            else if(!ifPathExists2){
+                return null;
+            }
+
+            copy.addEdge(edgeSaved, v1, v2);
+
+            for (int j = 0; j < 4; j++) {
+                if(!sortedEdges.isEmpty()){
+                    Edge remove = sortedEdges.remove(0);
+                    copy.removeEdge(remove);
+                }
+            }
+        }
     }
 
     public static boolean checkIfExistsPath(Graph graph, Vertex start, Vertex end) {
