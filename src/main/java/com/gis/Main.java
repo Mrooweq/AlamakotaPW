@@ -22,7 +22,7 @@ public class Main {
         List<Long> executionTimes = new ArrayList<>();
 
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 10; i++) {
             args = mockForLongEqualTimeForBothPaths();  //////////////////////////
             long readStart = System.currentTimeMillis();
             Wrapper wrapper = FromFile.generateGraphBasedOnPathFile(args);

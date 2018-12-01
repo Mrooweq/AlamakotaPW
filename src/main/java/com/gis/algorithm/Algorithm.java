@@ -44,24 +44,22 @@ public class Algorithm {
         long startMax = System.currentTimeMillis();
         Future<List<Vertex>> futureMaxPath = findPathsExecutorService.submit(findMaxPathCallable);
 
-        List<Vertex> minPath = null;
-        long endMin = 0;
-        try {
-            minPath = futureMinPath.get();
-            endMin = System.currentTimeMillis();
-            System.out.println("min: " + (endMin - startMin));
-
-
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
-
         List<Vertex> maxPath = null;
         long endMax = 0;
         try {
             maxPath = futureMaxPath.get();
             endMax = System.currentTimeMillis();
             System.out.println("max: " + (endMax - startMax));
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        List<Vertex> minPath = null;
+        long endMin = 0;
+        try {
+            minPath = futureMinPath.get();
+            endMin = System.currentTimeMillis();
+            System.out.println("min: " + (endMin - startMin));
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
@@ -201,14 +199,34 @@ public class Algorithm {
             return null;
         }
 
-        /////// DO ZROWNOLEGLENIA
+        //Start of paralleling
 
-        Relation lol1 = loop(g, 0, source, end);
-        Relation lol2 = loop(g, 1, source, end);
-        Relation lol3 = loop(g, 2, source, end);
-        Relation lol4 = loop(g, 3, source, end);
+        ExecutorService findMaxPathLoopExecutorService = Executors.newFixedThreadPool(4);
 
-        ////////
+        Callable<Relation> findMaxPathLoopCallable1 = () -> loop(g, 0, source, end);
+        Future<Relation> futureLol1 = findMaxPathLoopExecutorService.submit(findMaxPathLoopCallable1);
+
+        Callable<Relation> findMaxPathLoopCallable2 = () -> loop(g, 1, source, end);
+        Future<Relation> futureLol2 = findMaxPathLoopExecutorService.submit(findMaxPathLoopCallable2);
+
+        Callable<Relation> findMaxPathLoopCallable3 = () -> loop(g, 2, source, end);
+        Future<Relation> futureLol3 = findMaxPathLoopExecutorService.submit(findMaxPathLoopCallable3);
+
+        Callable<Relation> findMaxPathLoopCallable4 = () -> loop(g, 3, source, end);
+        Future<Relation> futureLol4 = findMaxPathLoopExecutorService.submit(findMaxPathLoopCallable4);
+
+        Relation lol1 = futureLol1.get();
+        Relation lol2 = futureLol2.get();
+        Relation lol3 = futureLol3.get();
+        Relation lol4 = futureLol4.get();
+
+
+        //Relation lol1 = loop(g, 0, source, end);
+        //Relation lol2 = loop(g, 1, source, end);
+        //Relation lol3 = loop(g, 2, source, end);
+        //Relation lol4 = loop(g, 3, source, end);
+
+        //End of paralleling
 
         Relation bestRelation = Stream.of(lol1, lol2, lol3, lol4)
                 .filter(Objects::nonNull)
@@ -235,6 +253,7 @@ public class Algorithm {
 
 
         firstPartPath.addAll(secondPartPath);
+        findMaxPathLoopExecutorService.shutdownNow();
         executorService.shutdown();
         //End of paralleling
 
