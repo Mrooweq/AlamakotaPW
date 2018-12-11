@@ -85,11 +85,7 @@ public class CompareService {
                 else{
                     optWorseThanProper++;
                 }
-            } catch (Exception e) {
-                if(e.getClass() != NoPathException.class){
-                    System.out.println();
-                }
-            }
+            } catch (Exception ignored){}
 
             Vertex.ID = 0;
             Edge.ID = 0;
