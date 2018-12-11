@@ -1,0 +1,5 @@
+set INTER := 0 2;
+param entr := 0;
+param exit := 2;
+param:  ROADS:  flow := 
+		0 2		49;
