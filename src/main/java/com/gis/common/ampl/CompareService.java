@@ -13,13 +13,14 @@ public class CompareService {
 
     public static void main(String[] args) {
 
-        int allValid = 0;
+        int index = 0;
         int optWorseThanProper = 0;
         int differentResults = 0;
 
-        while (allValid < LOOP_SIZE){
+        while (index < LOOP_SIZE){
             Random random = new Random();
-            System.out.println("xDDD: " + allValid);
+            System.out.println("index: " + index);
+
             try {
                 int n = 10;
                 int e = n * (n-1) / 2;
@@ -73,7 +74,7 @@ public class CompareService {
 
                 boolean compare = compare(wrapper, algoPaths, optPaths);
 
-                allValid++;
+                index++;
 
                 if(compare){
                     if(minAlgoPath.hashCode() != minOptPath.hashCode() || maxAlgoPath.hashCode() != maxOptPath.hashCode()){ //jedno z tych dwoch
@@ -89,18 +90,24 @@ public class CompareService {
             Edge.ID = 0;
         }
 
-        System.out.println("allProper: " + allValid);
+        System.out.println("allProper: " + index);
         System.out.println("optWorseThanProper: " + optWorseThanProper);
         System.out.println("differentResults: " + differentResults);
     }
 
     private static boolean compare(Wrapper wrapper, PathWrapper algoPaths, PathWrapper2 optPaths) {
 
-        List<Integer> minAlgoPath = algoPaths.getMinPath().stream()
-                .map(Vertex::getId)
-                .collect(Collectors.toList());
-
+        List<Integer> minAlgoPath = algoPaths.getMinPath().stream().map(Vertex::getId).collect(Collectors.toList());
         List<Integer> minOptPath = optPaths.getMinPath();
+        List<Integer> maxAlgoPath = algoPaths.getMaxPath().stream().map(Vertex::getId).collect(Collectors.toList());
+        List<Integer> maxOptPath = optPaths.getMaxPath();
+
+        validatePath(wrapper, minAlgoPath);
+        validatePath(wrapper, minOptPath);
+        validatePath(wrapper, maxAlgoPath);
+        validatePath(wrapper, maxOptPath);
+
+        //////////
 
         int flowOnPathFromAlgo = getFlowOnPath(wrapper, minAlgoPath);
         int flowOnPathFromOpt = getFlowOnPath(wrapper, minOptPath);
@@ -109,11 +116,7 @@ public class CompareService {
             return false;
         }
 
-        List<Integer> maxAlgoPath = algoPaths.getMaxPath().stream()
-                .map(Vertex::getId)
-                .collect(Collectors.toList());
-
-        List<Integer> maxOptPath = optPaths.getMaxPath();
+        /////////////
 
         flowOnPathFromAlgo = getFlowOnPath(wrapper, maxAlgoPath);
         flowOnPathFromOpt = getFlowOnPath(wrapper, maxOptPath);
@@ -123,6 +126,37 @@ public class CompareService {
         }
 
         return true;
+    }
+
+    private static void validatePath(Wrapper wrapper, List<Integer> path){
+        Graph graph = wrapper.getGraph();
+        Vertex from = wrapper.getFrom();
+        Vertex to = wrapper.getTo();
+
+        Vertex v = from;
+        int i = 0;
+
+        while (true){
+            Collection<Vertex> successors = graph.getSuccessors(v);
+            int finalI = i;
+            Optional<Vertex> any = successors.stream().filter(x -> x.getId() == path.get(finalI + 1)).findAny();
+
+            if(any.isPresent()){
+                v = any.get();
+
+                if(v == to){
+                    return;
+                }
+                else {
+                    i++;
+                }
+            }
+            else{
+                break;
+            }
+        }
+
+        throw new IllegalArgumentException();
     }
 
     private static int getFlowOnPath(Wrapper wrapper, List<Integer> min) {
