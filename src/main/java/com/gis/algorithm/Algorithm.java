@@ -32,47 +32,46 @@ public class Algorithm {
         if(!checkIfExistsPath(graph, source, end)){
             throw new NoPathException();
         }
-        //Start of paralleling
-        //List<Vertex> minPath = findMinPath(graph, source, end);
-        //List<Vertex> maxPath = findMaxPath(graph, source, end);
-        //Parallel execution of finding path findMinPath and findMaxPath
-        ExecutorService findPathsExecutorService = Executors.newFixedThreadPool(2);
 
-        Callable<List<Vertex>> findMinPathCallable = () -> findMinPath(graph, source, end);
-        long startMin = System.currentTimeMillis();
-        Future<List<Vertex>> futureMinPath = findPathsExecutorService.submit(findMinPathCallable);
+        List<Vertex> minPath = new ArrayList<>();
+        List<Vertex> maxPath = new ArrayList<>();
 
-        Callable<List<Vertex>> findMaxPathCallable = () -> findMaxPath(graph, source, end);
-        long startMax = System.currentTimeMillis();
-        Future<List<Vertex>> futureMaxPath = findPathsExecutorService.submit(findMaxPathCallable);
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    List<Vertex> path = findMinPath(graph, source, end);
+                    minPath.addAll(path);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
-        List<Vertex> minPath = null;
-        long endMin = 0;
+        Thread thread2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    List<Vertex> path = findMaxPath(graph, source, end);
+                    maxPath.addAll(path);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread1.start();
+        thread2.start();
+
         try {
-            minPath = futureMinPath.get();
-            endMin = System.currentTimeMillis();
-            System.out.println("min: " + (endMin - startMin));
-
-
-        } catch (InterruptedException | ExecutionException e) {
+            thread1.join();
+            thread2.join();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        List<Vertex> maxPath = null;
-        long endMax = 0;
-        try {
-            maxPath = futureMaxPath.get();
-            endMax = System.currentTimeMillis();
-            System.out.println("max: " + (endMax - startMax));
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
 
-        //End of paralleling
-        findPathsExecutorService.shutdownNow();
         PathWrapper pathWrapper = new PathWrapper(minPath, maxPath);
-        pathWrapper.setMinimum(endMin - startMin);
-        pathWrapper.setMaximum(endMax - startMax);
 
         return pathWrapper;
     }
@@ -132,47 +131,56 @@ public class Algorithm {
         listOfEdges.sort(COMPARATOR);
 
         for (Edge edge : listOfEdges) {
-            //Start of paralleling
-            //Pallalel 2 executions of method checkIfExistsPath
-            ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-            Callable<Boolean> firstCallable = () -> checkIfExistsPath(g, source, graph.getSource(edge));
-            Future<Boolean> futureFirst = executorService.submit(firstCallable);
+            final boolean[] first = new boolean[1];
+            final boolean[] second = new boolean[1];
 
-            Callable<Boolean> secondCallable = () -> checkIfExistsPath(g, graph.getDest(edge), end);
-            Future<Boolean> futureSecond = executorService.submit(secondCallable);
+            Thread thread1 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    first[0] = checkIfExistsPath(g, source, graph.getSource(edge));
+                }
+            });
 
-            boolean first = false;
-            try {
-                first = futureFirst.get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
-            boolean second = false;
-            try {
-                second = futureSecond.get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-            }
+            Thread thread2 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    second[0] = checkIfExistsPath(g, graph.getDest(edge), end);
+                }
+            });
 
-            //End of paralleling
-            executorService.shutdownNow();
+            thread1.start();
+            thread2.start();
+
+            thread1.join();
+            thread2.join();
+
+            if (first[0] && second[0]) {
+                List<Vertex> firstPartPath = new ArrayList<>();
+                List<Vertex> secondPartPath = new ArrayList<>();
 
 
-            if (first && second) {
-                //Start of paralleling
-                //List<Vertex> firstPartPath = findShortestPath(graph, source, graph.getSource(edge));
-                //List<Vertex> secondPartPath = findShortestPath(graph, graph.getDest(edge), end);
-                ExecutorService shortestPathExecutorService = Executors.newFixedThreadPool(2);
+                Thread thread3 = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<Vertex> path = findShortestPath(graph, source, graph.getSource(edge));
+                        firstPartPath.addAll(path);
+                    }
+                });
 
-                Callable<List<Vertex>> firstFindShortestCallable = () -> findShortestPath(graph, source, graph.getSource(edge));
-                Future<List<Vertex>> futureFirstShortest = shortestPathExecutorService.submit(firstFindShortestCallable);
+                Thread thread4 = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<Vertex> path = findShortestPath(graph, graph.getDest(edge), end);
+                        secondPartPath.addAll(path);
+                    }
+                });
 
-                Callable<List<Vertex>> secondFindShortestCallable = () -> findShortestPath(graph, graph.getDest(edge), end);
-                Future<List<Vertex>> futureSecondShortest = shortestPathExecutorService.submit(secondFindShortestCallable);
+                thread3.start();
+                thread4.start();
 
-                List<Vertex> firstPartPath = futureFirstShortest.get();
-                List<Vertex> secondPartPath = futureSecondShortest.get();
+                thread3.join();
+                thread4.join();
 
                 List<Vertex> sum = new ArrayList<>();
                 sum.addAll(firstPartPath);
@@ -180,8 +188,6 @@ public class Algorithm {
 
                 Set<Vertex> setToEliminateRepeats = new HashSet<>();
                 setToEliminateRepeats.addAll(sum);
-                //End of paralleling
-                shortestPathExecutorService.shutdownNow();
 
                 if (setToEliminateRepeats.size() == firstPartPath.size() + secondPartPath.size()) {
                     return sum;
@@ -229,25 +235,36 @@ public class Algorithm {
         }
 
         graph.addEdge(edgeSaved, v1, v2);
-        //Start of paralleling
-        //List<Vertex> firstPartPath = findShortestPath(graph, source, v1);
-        //List<Vertex> secondPartPath = findShortestPath(graph, v2, end);
-         ExecutorService executorService = Executors.newFixedThreadPool(2);
-         Vertex finalV1 = v1;
-         Callable<List<Vertex>> callFirst = () -> findShortestPath(graph, source, finalV1);
-         Future<List<Vertex>> futureFirstPathPath = executorService.submit(callFirst);
 
-         Vertex finalV2 = v2;
-         Callable<List<Vertex>> callSecond = () -> findShortestPath(graph, finalV2, end);
-         Future<List<Vertex>> futureSecondPathPath = executorService.submit(callSecond);
+        List<Vertex> firstPartPath = new ArrayList<>();
+        List<Vertex> secondPartPath = new ArrayList<>();
 
-         List<Vertex> firstPartPath = futureFirstPathPath.get();
-         List<Vertex> secondPartPath = futureSecondPathPath.get();
+        Vertex finalV1 = v1;
+        Vertex finalV2 = v2;
 
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<Vertex> path = findShortestPath(graph, source, finalV1);
+                firstPartPath.addAll(path);
+            }
+        });
+
+        Thread thread2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                List<Vertex> path = findShortestPath(graph, finalV2, end);
+                secondPartPath.addAll(path);
+            }
+        });
+
+        thread1.start();
+        thread2.start();
+
+        thread1.join();
+        thread2.join();
 
         firstPartPath.addAll(secondPartPath);
-        //End of paralleling
-        executorService.shutdownNow();
         return firstPartPath;
     }
 
