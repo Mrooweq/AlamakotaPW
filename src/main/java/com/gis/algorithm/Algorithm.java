@@ -36,11 +36,20 @@ public class Algorithm {
         List<Vertex> minPath = new ArrayList<>();
         List<Vertex> maxPath = new ArrayList<>();
 
+        final long[] startMin = new long[1];
+        final long[] endMin = new long[1];
+
+        final long[] startMax = new long[1];
+        final long[] endMax = new long[1];
+
         Thread thread1 = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
+                    startMin[0] = System.currentTimeMillis();
                     List<Vertex> path = findMinPath(graph, source, end);
+                    endMin[0] = System.currentTimeMillis();
+                    System.out.println("min: " + (endMin[0] - startMin[0]));
                     minPath.addAll(path);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -52,7 +61,10 @@ public class Algorithm {
             @Override
             public void run() {
                 try {
+                    startMax[0] = System.currentTimeMillis();
                     List<Vertex> path = findMaxPath(graph, source, end);
+                    endMax[0] = System.currentTimeMillis();
+                    System.out.println("max: " + (endMax[0] - startMax[0]));
                     maxPath.addAll(path);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -72,6 +84,8 @@ public class Algorithm {
 
 
         PathWrapper pathWrapper = new PathWrapper(minPath, maxPath);
+        pathWrapper.setMinimum(endMin[0] - startMin[0]);
+        pathWrapper.setMaximum(endMax[0] - startMax[0]);
 
         return pathWrapper;
     }
