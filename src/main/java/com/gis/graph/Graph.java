@@ -1,8 +1,9 @@
 package com.gis.graph;
 
+import java.io.Serializable;
 import java.util.Collection;
 
-public interface Graph  {
+public interface Graph extends Serializable {
     Collection<Edge> getEdges();
     Collection<Vertex> getVertices();
     void addEdge(Edge e, Vertex v1, Vertex v2);

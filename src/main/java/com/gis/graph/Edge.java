@@ -5,10 +5,12 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Setter
 @Getter
 @AllArgsConstructor
-public class Edge {
+public class Edge implements Serializable {
     private int id;
     private int flow;
 
