@@ -10,16 +10,10 @@ import java.util.concurrent.ExecutionException;
 
 public class AlgorithmServiceImpl implements AlgorithmService {
 
-    private Graph graph = null;
     private final String name;
 
     AlgorithmServiceImpl(String name) {
         this.name = name;
-    }
-
-    @Override
-    public void setGraph(Graph graph) {
-        this.graph = graph;
     }
 
     @Override
@@ -43,24 +37,6 @@ public class AlgorithmServiceImpl implements AlgorithmService {
             System.err.println("Error during findMaxPath call in " + name);
             e.printStackTrace();
             throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public boolean checkIfExistsPath(Graph graph, Vertex start, Vertex end) {
-        //System.out.println("Serving checkIfExistsPath remote call.");
-        return Algorithm.checkIfExistsPath(graph, start, end);
-    }
-
-    @Override
-    public List<Vertex> findShortestPath(Graph graph, Vertex start, Vertex stop) {
-        //System.out.println("Serving findShortestPath remote call.");
-        return Algorithm.findShortestPath(graph, start, stop);
-    }
-
-     private void checkGraph() {
-        if (graph == null) {
-            throw new RuntimeException("Graph was not set for this worker: " + name);
         }
     }
 }

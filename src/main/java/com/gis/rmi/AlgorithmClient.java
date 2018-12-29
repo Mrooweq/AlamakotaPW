@@ -15,10 +15,6 @@ public class AlgorithmClient {
 
     public static final String WORKER_MIN_PATH = "WorkerMinPath";
     public static final String WORKER_MAX_PATH = "WorkerMaxPath";
-    public static final String WORKER_1 = "Worker1";
-    public static final String WORKER_2 = "Worker2";
-    public static final String WORKER_3 = "Worker3";
-    public static final String WORKER_4 = "Worker4";
 
     private final String serviceName;
 
@@ -38,22 +34,6 @@ public class AlgorithmClient {
         }
     }
 
-    static boolean checkIfExistsPath(String serviceName, Graph graph, Vertex start, Vertex end) {
-        try {
-            return lookupService(serviceName).checkIfExistsPath(graph, start, end);
-        } catch (RemoteException e) {
-            throw wrapRemoteException(e, serviceName, "checkIfExistsPath");
-        }
-    }
-
-    static List<Vertex> findShortestPath(String serviceName, Graph graph, Vertex start, Vertex stop) {
-        try {
-            return lookupService(serviceName).findShortestPath(graph, start, stop);
-        } catch (RemoteException e) {
-            throw wrapRemoteException(e, serviceName, "findShortestPath");
-        }
-    }
-
     private AlgorithmService lookupService() throws RemoteException{
         return lookupService(serviceName);
     }
@@ -70,12 +50,6 @@ public class AlgorithmClient {
     }
 
     private RuntimeException wrapRemoteException(RemoteException e, String methodName) {
-        System.err.println("Remote error when calling " + methodName + " on service: " + serviceName);
-        e.printStackTrace();
-        return new RuntimeException(e);
-    }
-
-    private static RuntimeException wrapRemoteException(RemoteException e, String serviceName, String methodName) {
         System.err.println("Remote error when calling " + methodName + " on service: " + serviceName);
         e.printStackTrace();
         return new RuntimeException(e);
