@@ -8,21 +8,21 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class AlgorithmServer {
 
+    static final String ALGORITHM_SERVICE = "AlgorithmService";
+
     public static void main(String... args) {
         try {
-            String workerName = args[0];
-            String registryHost = "localhost";
-            if (args.length > 1) {
-                registryHost = args[1];
+            String workerName = ALGORITHM_SERVICE;
+            if (args.length > 0) {
+                workerName = args[0];
             }
-
             System.out.println("Starting AlgorithmServer: " + workerName);
             AlgorithmServiceImpl server = new AlgorithmServiceImpl(workerName);
             // Exporting the object of implementation class
             // (here we are exporting the remote object to the stub)
             AlgorithmService stub = (AlgorithmService) UnicastRemoteObject.exportObject(server, 0);
             // Binding the remote object (stub) in the registry
-            Registry registry = LocateRegistry.getRegistry(registryHost);
+            Registry registry = LocateRegistry.getRegistry();
             registry.bind(workerName, stub);
             System.out.println("Algorithm Server ready");
         } catch (AlreadyBoundException | RemoteException e) {
